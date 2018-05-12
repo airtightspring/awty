@@ -25,14 +25,9 @@ class ThereApp: Application() {
 class Prefs (context: Context) {
     val PREFS_FILENAME = "awty.kjerauld.washington.edu.awty.prefs"
     val messageString = "Message String"
-    val timer = "Timer Value"
     val prefs: SharedPreferences = context.getSharedPreferences(PREFS_FILENAME, 0);
 
     var checkMessageString: String
         get() = prefs.getString(messageString, "")
         set(value) = prefs.edit().putString(messageString, value).apply()
-
-    var checkTimer: Long
-        get() = prefs.getLong(timer, 1 * 60000)
-        set(value) = prefs.edit().putLong(timer, value * 60000).apply()
 }

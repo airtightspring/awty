@@ -9,12 +9,10 @@ import android.text.TextWatcher
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
-import android.widget.TextView
 import android.widget.Toast
-import android.widget.TimePicker
 import android.app.PendingIntent
 import android.content.Intent
-import android.R.string.cancel
+import android.os.SystemClock
 
 
 class MainActivity : AppCompatActivity() {
@@ -39,9 +37,6 @@ class MainActivity : AppCompatActivity() {
         var frequency_content = 0
         var frequency_truth = false
 
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val timePicker: TimePicker
-
         errorText.text = whatIsWrong(message_truth, phone_truth, frequency_truth)
 
         start.setEnabled(false)
@@ -56,13 +51,13 @@ class MainActivity : AppCompatActivity() {
             override fun afterTextChanged(s: Editable?) {
                 val content = message.getText().toString()
                 message_content = content
-                if(content != "") {
+                if (content != "") {
                     message_truth = true
                 } else {
                     message_truth = false
                 }
 
-                if(message_truth && phone_truth && frequency_truth) {
+                if (message_truth && phone_truth && frequency_truth) {
                     start.setEnabled(true)
                     errorText.setEnabled(false)
                 } else {
@@ -80,14 +75,14 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun afterTextChanged(s: Editable?) {
-                if(phone_number.getText().toString().length == 10) {
+                if (phone_number.getText().toString().length == 10) {
                     phone_truth = true
                     phone_number_content = phone_number.getText().toString()
                 } else {
                     phone_truth = false
                 }
 
-                if(message_truth && phone_truth && frequency_truth) {
+                if (message_truth && phone_truth && frequency_truth) {
                     start.setEnabled(true)
                     errorText.setEnabled(false)
                 } else {
@@ -102,20 +97,20 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                if (frequency.getText().toString().matches((("^0").toRegex())) ) {
+                if (frequency.getText().toString().matches((("^0").toRegex()))) {
                     frequency.setText("");
                 }
             }
 
             override fun afterTextChanged(s: Editable?) {
-                if(frequency.getText().isNotEmpty()) {
+                if (frequency.getText().isNotEmpty()) {
                     frequency_truth = true
                     frequency_content = frequency.getText().toString().toInt()
                 } else {
                     frequency_truth = false
                 }
 
-                if(message_truth && phone_truth && frequency_truth) {
+                if (message_truth && phone_truth && frequency_truth) {
                     start.setEnabled(true)
                     errorText.setEnabled(false)
                 } else {
@@ -125,23 +120,30 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
+        val intent = Intent(this, MyAlarm::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0)
 
         start.text = "Start"
         start.setOnClickListener(View.OnClickListener {
-            if(start.text == "Start") {
+
+            if (start.text == "Start") {
                 start.text = "Stop"
                 val phoneNumberHolder = makePhoneNumber(phone_number_content)
-                if(phoneNumberHolder != "Invalid Phone Number") {
+                if (phoneNumberHolder != "Invalid Phone Number") {
                     val toastHolder: String = phoneNumberHolder + ": " + message_content
 
                     message.setEnabled(false)
                     phone_number.setEnabled(false)
                     frequency.setEnabled(false)
 
-                    prefs.checkTimer = frequency_content.toLong()
+                    val timer: Long = (frequency_content * 1000 * 60).toLong()
+
                     prefs.checkMessageString = toastHolder
-                    setAlarm(true)
+
+                    println(timer)
+                    alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + timer, timer, pendingIntent)
                 }
             } else {
                 start.text = "Start"
@@ -149,24 +151,22 @@ class MainActivity : AppCompatActivity() {
                 message.setEnabled(true)
                 phone_number.setEnabled(true)
                 frequency.setEnabled(true)
-
-                setAlarm(false)
+                alarmManager.cancel(pendingIntent)
             }
         })
 
-        errorText.setOnClickListener(){
+        errorText.setOnClickListener() {
             Toast.makeText(this, whatIsWrong(message_truth, phone_truth, frequency_truth), Toast.LENGTH_LONG).show()
         }
-
 
 
     }
 
     fun makePhoneNumber(phoneNumber: String): String {
         var phoneNumberHolder = ""
-        if(phoneNumber.length == 10) {
-            phoneNumberHolder += "(" + phoneNumber.substring(0,3) + ") "
-            phoneNumberHolder += phoneNumber.substring(3,6) + "-" + phoneNumber.substring(6, 10)
+        if (phoneNumber.length == 10) {
+            phoneNumberHolder += "(" + phoneNumber.substring(0, 3) + ") "
+            phoneNumberHolder += phoneNumber.substring(3, 6) + "-" + phoneNumber.substring(6, 10)
             return phoneNumberHolder
         } else {
             return "Invalid Phone Number"
@@ -191,20 +191,6 @@ class MainActivity : AppCompatActivity() {
             return ""
         } else {
             return returnCheck
-        }
-    }
-
-    private fun setAlarm( status: Boolean) {
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
-        val intent = Intent(this, MyAlarm::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0)
-
-        //val triggerNumber = (60000 * prefs.checkTimer).toLong()
-        if(status) {
-            alarmManager.setRepeating(AlarmManager.RTC, 0, prefs.checkTimer, pendingIntent)
-        } else {
-            alarmManager.cancel(pendingIntent)
         }
     }
 }
