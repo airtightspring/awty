@@ -130,6 +130,8 @@ class MainActivity : AppCompatActivity() {
 
             if (start.text == "Start") {
                 start.text = "Stop"
+                prefs.checkMessage = message_content
+                prefs.checkPhoneNumber = phone_number_content
                 val phoneNumberHolder = makePhoneNumber(phone_number_content)
                 if (phoneNumberHolder != "Invalid Phone Number") {
                     val toastHolder: String = phoneNumberHolder + ": " + message_content

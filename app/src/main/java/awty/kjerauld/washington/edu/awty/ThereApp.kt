@@ -25,9 +25,19 @@ class ThereApp: Application() {
 class Prefs (context: Context) {
     val PREFS_FILENAME = "awty.kjerauld.washington.edu.awty.prefs"
     val messageString = "Message String"
+    val PHONE_NUMBER = "Phone Number"
+    val MESSAGE = "Message"
     val prefs: SharedPreferences = context.getSharedPreferences(PREFS_FILENAME, 0);
 
     var checkMessageString: String
         get() = prefs.getString(messageString, "")
         set(value) = prefs.edit().putString(messageString, value).apply()
+
+    var checkPhoneNumber: String
+        get() = prefs.getString(PHONE_NUMBER, "")
+        set(value) = prefs.edit().putString(PHONE_NUMBER, value).apply()
+
+    var checkMessage: String
+        get() = prefs.getString(MESSAGE, "")
+        set(value) = prefs.edit().putString(MESSAGE, value).apply()
 }
